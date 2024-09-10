@@ -2,6 +2,6 @@
 ## Title: GreenWall Audit
 ## Notes: Audit the GreenWalls!
 ## Dependencies: GreenWall
-## Author: Seryniti, Proudmoore-US
+## Author: Seryniti, Proudmoore-US; Malfino, Nek'rosh-EU
 ## Version: 1.1.0
 GWAudit.lua
