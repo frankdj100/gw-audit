@@ -3,7 +3,7 @@ local c=CreateFrame("Frame")
 local GuildRosterReady
 local gwChannelId,gwChannelCount
 local outputMode
-local memberList = ()
+local memberList = {}
 local CTL = _G.ChatThrottleLib
 
 -- Main function called when /gwaudit slash command is given
@@ -12,21 +12,22 @@ function GWAudit( slashcmd )
     local numChannels
 
     -- Handle command line args
-    local _, _, cmd = string.find(slashcmd, "%s?(%w+)%s?(.*)")
-    if cmd == "gchat" or cmd == "g" then
-        if CTL then
-            outputMode = "gchat"
-        else
-            print( "|cFF00FF00GWAudit:|r ChatThrottleLib is not available, cannot send guild chat message")
-            outputMode = nil
+    outputMode = nil
+    if slashcmd ~= nil then
+        local _, _, cmd = string.find(slashcmd, "%s?(%w+)%s?(.*)")
+        if cmd == "gchat" or cmd == "g" then
+            if CTL then
+                outputMode = "gchat"
+            else
+                print( "|cFF00FF00GWAudit:|r ChatThrottleLib is not available, cannot send guild chat message")
+                outputMode = nil
+            end
+        elseif cmd == "whisper" or cmd == "w" then
+            outputMode = "whisper"
+        elseif cmd ~= nil then
+            print( "Usage: /gwaudit [gchat||whisper||help]")
+            return
         end
-    elseif cmd == "whisper" or cmd == "w" then
-        outputMode = "whisper"
-    elseif cmd == nil then
-        outputMode = nil
-    else
-        print( "Usage: /gwaudit [gchat|whisper|help]")
-        return
     end
 
     -- See if guild roster info has been received, and if so, request GW channel info
@@ -63,25 +64,25 @@ end
 
 local function GWAuditDoComms()
 
-    local gchatList = ()
-
     -- Send out the message
     if outputMode == "gchat" then
         if #memberList > 0 then
-            local message = memberList.pop()
-            for member in memberList do
+            local message = table.remove( memberList )
+            for _, member in ipairs(memberList) do
                 message = member .. ", " .. message
             end
+            print("Guild message to " .. message )
             CTL:SendChatMessage( "BULK",
                         "GWAUDIT",
-                        "Reminder to the following guild members to install the Greenwall addon: " .. message,
+                        "Reminder for the following guild members to install the Greenwall addon: " .. message,
                         "GUILD" )
         end
     elseif outputMode == "whisper" then
-        for member in memberList do
+        for _, member in ipairs(memberList) do
+            print("Whisper to " .. member )
             CTL:SendChatMessage("BULK",
                 "GWAUDIT",
-                "Please install the Greenwall addon for communication between our guilds", 
+                "Please install the Greenwall addon for communication between our guilds. Thank you!", 
                 "WHISPER",
                 nil,            -- language whatever
                 member)
@@ -103,6 +104,7 @@ local function GWAuditProcess()
     end
 
     -- Go through all guild members that are online and see if they appear in the table
+    memberList = {}
     local channelNameStr=table.concat(gwChannelRoster,",")
     local guildCount=GetNumGuildMembers()
     for i=1,guildCount do
@@ -111,7 +113,7 @@ local function GWAuditProcess()
             local localname,localrealm=strsplit("-",guildieName,2)
             if channelNameStr:find(localname)==nil then
                 print(localname);
-                memberList.push( localname )
+                table.insert( memberList, localname )
             end
         end
     end
@@ -135,5 +137,5 @@ c:SetScript("OnEvent",function(self,event,id,count)
     end
 end)
 
-SlashCmdList["GWAUDIT"] = function() GWAudit() end
+SlashCmdList["GWAUDIT"] = GWAudit
 SLASH_GWAUDIT1 = "/gwaudit"

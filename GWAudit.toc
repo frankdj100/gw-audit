@@ -1,7 +1,7 @@
-## Interface: 80000
+## Interface: 11503
 ## Title: GreenWall Audit
-## Notes: Audit the GreenWalls!
+## Notes: Audit the GreenWalls - with comms support!
 ## Dependencies: GreenWall
 ## Author: Seryniti, Proudmoore-US; Malfino, Nek'rosh-EU
-## Version: 1.1.0
+## Version: 1.2.0
 GWAudit.lua
