@@ -68,7 +68,7 @@ local function GWAuditDoComms( nonGWMemberList )
             for _, member in ipairs(nonGWMemberList) do
                 message = member .. ", " .. message
             end
-            print("Guild message to " .. message )
+            --print("Guild message to " .. message )
             CTL:SendChatMessage( "BULK",
                         "GWAUDIT",
                         "Reminder for the following guild members to install the Greenwall addon: " .. message,
@@ -76,7 +76,7 @@ local function GWAuditDoComms( nonGWMemberList )
         end
     elseif outputMode == "whisper" then
         for _, member in ipairs(nonGWMemberList) do
-            print("Whisper to " .. member )
+            --print("Whisper to " .. member )
             CTL:SendChatMessage("BULK",
                 "GWAUDIT",
                 "Please install the Greenwall addon for communication between our guilds. Thank you!", 
@@ -102,15 +102,18 @@ local function GWAuditProcessPhaseTwo()
     end
 
     -- Prune all the guildies that have logged out in the last 10 seconds
+    print( "|cFF00FF00GWAudit:|r Checking who's still online" );
     local stillOnlineGuildies = {}
     local guildCount = GetNumGuildMembers()
     for i = 1, guildCount do
         local guildieName,_,_,_,_,_,_,_,online = GetGuildRosterInfo(i)
         local localName, _ = strsplit( "-", guildieName, 2)
-        if online and onlineGuildies[ guildieName ] then
-            table.insert( stillOnlineGuildies, localName )
-        else
-            print("|cFF00FF00GWAudit:|r " .. localName .. " logged out -- skipping")
+        if online then
+            if onlineGuildies[ localName ] then
+                table.insert( stillOnlineGuildies, localName )
+            else
+                print("|cFF00FF00GWAudit:|r " .. localName .. " newly logged in -- skipping")
+            end
         end
     end
 
@@ -118,8 +121,9 @@ local function GWAuditProcessPhaseTwo()
     print( "|cFF00FF00GWAudit:|r Performing audit" );
     local nonGWMemberList = {}
     for i, v in ipairs( stillOnlineGuildies ) do
-        if gwChannelRoster[ v ] == 1 then
+        if gwChannelRoster[ v ] == nil then
             table.insert( nonGWMemberList, v )
+            print( v )      -- For no-comms
         end
     end
 
